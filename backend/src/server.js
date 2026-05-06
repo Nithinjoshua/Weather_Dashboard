@@ -2,9 +2,16 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 
+import mongoose from "mongoose";
 import weatherRouter from "./routes/weather.routes.js";
+import authRouter from "./routes/auth.routes.js";
 
 dotenv.config();
+
+mongoose
+  .connect(process.env.MONGODB_URI)
+  .then(() => console.log("DB connection successful!"))
+  .catch((err) => console.error("DB connection error:", err));
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -25,9 +32,10 @@ app.get("/api/health", (_req, res) => {
   });
 });
 
+app.use("/api/auth", authRouter);
 app.use("/api/weather", weatherRouter);
 
-app.use((err, _req, res, _next) => {
+app.use((err, req, res, next) => {
   console.error(err);
 
   res.status(err.statusCode || 500).json({
